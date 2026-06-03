@@ -26,7 +26,6 @@ class AlertService
             $metricValue = $latestMetric->$metric ?? 0;
             
             if ($metricValue > $threshold) {
-                // Check if alert already exists to avoid duplicates
                 $existingAlert = Alert::where('server_id', $server->id)
                     ->where('type', 'Performance')
                     ->where('metric_type', $metric)
