@@ -95,6 +95,6 @@ class ServerController extends Controller
         $server = Server::findOrFail($id);
         $server->delete();
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Server deleted successfully'],204);
     }
 }
