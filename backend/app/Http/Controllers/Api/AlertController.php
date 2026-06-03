@@ -27,7 +27,7 @@ public function index(Request $request, Server $server)
 
         $alerts = $alertsQuery->get();
 
-        return response()->json($alerts);
+        return response()->json($alertps);
     }
 
  public function resolve(Request $request, Server $server, $alertId)
