@@ -22,6 +22,7 @@ return new class extends Migration
             $table->enum('status', ['online', 'degraded', 'offline'])->default('offline');
             $table->timestamp('last_checked_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
