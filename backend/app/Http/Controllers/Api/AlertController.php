@@ -8,12 +8,9 @@ use App\Models\Server;
 
 class AlertController extends Controller
 {
-    
-public function index(Request $request, Server $server)
+    public function index(Request $request, Server $server)
     {
-        $server = Server::findOrFail($serverId);
-
-        $alertsQuery = $server->alerts()->latestFirst();
+        $alertsQuery = $server->alerts()->latest();
 
         if ($request->has('is_resolved')) {
             $isResolved = filter_var($request->input('is_resolved'), FILTER_VALIDATE_BOOLEAN);
@@ -27,10 +24,10 @@ public function index(Request $request, Server $server)
 
         $alerts = $alertsQuery->get();
 
-        return response()->json($alertps);
+        return response()->json($alerts);
     }
 
- public function resolve(Request $request, Server $server, $alertId)
+    public function resolve(Request $request, Server $server, $alertId)
     {
         $alert = $server->alerts()->findOrFail($alertId);
 
@@ -50,7 +47,6 @@ public function index(Request $request, Server $server)
         $alert = $server->alerts()->findOrFail($alertId);
         $alert->delete();
 
-        return response()->json(['message' => 'Alert deleted successfully'], 204);
+        return response()->json(['message' => 'Alert deleted successfully'], 200);
     }
-
 }

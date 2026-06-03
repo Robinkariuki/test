@@ -1,15 +1,20 @@
 <?php
 
+namespace App\Services;
+
+use App\Models\Server;
+use App\Models\Alert;
+use Illuminate\Support\Facades\Log;
 
 class AlertService
 {
- private array $thresholds = [
+    private array $thresholds = [
         'cpu_usage' => 90,
         'memory_usage' => 90,
         'disk_usage' => 90,
     ];
 
-    public function checkForAlerts(Server $server)
+    public function checkForAlerts(Server $server): void
     {
         $latestMetric = $server->latestMetric;
 
@@ -18,20 +23,43 @@ class AlertService
         }
 
         foreach ($this->thresholds as $metric => $threshold) {
-            if ($latestMetric->$metric > $threshold) {
-                Alert::create([
-                    'server_id' => $server->id,
-                    'type' => 'Performance',
-                    'severity' => 'High',
-                    'message' => ucfirst(str_replace('_', ' ', $metric)) . " is critically high.",
-                ]);
+            $metricValue = $latestMetric->$metric ?? 0;
+            
+            if ($metricValue > $threshold) {
+                // Check if alert already exists to avoid duplicates
+                $existingAlert = Alert::where('server_id', $server->id)
+                    ->where('type', 'Performance')
+                    ->where('metric_type', $metric)
+                    ->where('is_resolved', false)
+                    ->first();
+                
+                if (!$existingAlert) {
+                    Alert::create([
+                        'server_id' => $server->id,
+                        'type' => 'Performance',
+                        'severity' => $metricValue > 95 ? 'critical' : 'warning', // Match schema
+                        'metric_type' => $metric,
+                        'message' => ucfirst(str_replace('_', ' ', $metric)) . " is critically high at {$metricValue}%",
+                        'threshold_value' => $threshold,
+                        'actual_value' => $metricValue,
+                    ]);
+                    
+                    Log::warning('Alert created', [
+                        'server_id' => $server->id,
+                        'metric' => $metric,
+                        'value' => $metricValue
+                    ]);
+                }
             } else {
-                // Optionally resolve existing alerts if the metric is back to normal
+                // Resolve alert if metric is back to normal
                 Alert::where('server_id', $server->id)
                     ->where('type', 'Performance')
-                    ->where('message', ucfirst(str_replace('_', ' ', $metric)) . " is critically high.")
+                    ->where('metric_type', $metric)
                     ->where('is_resolved', false)
-                    ->update(['is_resolved' => true, 'resolved_at' => now()]);
+                    ->update([
+                        'is_resolved' => true, 
+                        'resolved_at' => now()
+                    ]);
             }
         }
     }

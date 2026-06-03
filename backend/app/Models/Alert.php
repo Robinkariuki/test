@@ -9,22 +9,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Alert extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'server_id',
         'type',
         'severity',
+        'metric_type',
         'message',
+        'threshold_value',
+        'actual_value',
         'is_resolved',
         'resolved_at',
     ];
+
     protected $casts = [
         'is_resolved' => 'boolean',
         'resolved_at' => 'datetime',
     ];
 
-
     protected $dates = ['resolved_at'];
-    
+
     protected $attributes = [
         'is_resolved' => false,
     ];
@@ -34,11 +38,15 @@ class Alert extends Model
         return $this->belongsTo(Server::class);
     }
 
+    public function scopeLatest($query)
+    {
+        return $query->orderBy('created_at', 'desc');
+    }
+
     public function scopeUnresolved($query)
     {
         return $query->where('is_resolved', false);
     }
-
 
     public function scopeResolved($query)
     {
@@ -50,12 +58,10 @@ class Alert extends Model
         return $query->where('severity', 'critical');
     }
 
-
     public function scopeWarning($query)
     {
         return $query->where('severity', 'warning');
     }
-
 
     public function markAsResolved(): bool
     {
@@ -70,7 +76,6 @@ class Alert extends Model
         return !$this->is_resolved;
     }
 
-
     public function getSeverityBadgeAttribute(): string
     {
         return match ($this->severity) {
@@ -79,7 +84,6 @@ class Alert extends Model
             default => 'secondary',
         };
     }
-
 
     public function getAgeAttribute(): string
     {
@@ -98,10 +102,8 @@ class Alert extends Model
         }
     }
 
-
     public function getResolvedAttribute(): bool
     {
         return $this->is_resolved;
     }
-
 }

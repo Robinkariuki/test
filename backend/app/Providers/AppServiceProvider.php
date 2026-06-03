@@ -14,6 +14,14 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
+         $this->app->singleton(AlertService::class, function ($app) {
+            return new AlertService();
+        });
+
+        $this->app->singleton(MetricIngestionService::class, function ($app) {
+            return new MetricIngestionService($app->make(AlertService::class));
+        });
+
     }
 
     /**

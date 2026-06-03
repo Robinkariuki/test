@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 
 class MetricController extends Controller
 {
+
+
      
     public function index(Request $request, Server $server): JsonResponse
     {
@@ -27,7 +29,7 @@ class MetricController extends Controller
         return response()->json($metrics);
     }
 
-    
+
         public function store(Request $request, Server $server): JsonResponse
         {
     
@@ -46,7 +48,15 @@ class MetricController extends Controller
         }
 
 
+        public function scopeLatestFirst($query)
+        {
+        return $query->orderBy('recorded_at', 'desc');
+        }
 
+        public function scopeSince($query, $since)
+        {
+        return $query->where('recorded_at', '>=', $since);
+        }
     
 
 }
