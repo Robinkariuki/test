@@ -9,7 +9,7 @@ use App\Models\Server;
 class AlertController extends Controller
 {
     
-public function index(Request $request, $serverId)
+public function index(Request $request, Server $server)
     {
         $server = Server::findOrFail($serverId);
 
@@ -30,9 +30,8 @@ public function index(Request $request, $serverId)
         return response()->json($alerts);
     }
 
- public function resolve(Request $request, $serverId, $alertId)
+ public function resolve(Request $request, Server $server, $alertId)
     {
-        $server = Server::findOrFail($serverId);
         $alert = $server->alerts()->findOrFail($alertId);
 
         if ($alert->is_resolved) {
@@ -46,9 +45,8 @@ public function index(Request $request, $serverId)
         return response()->json(['message' => 'Alert marked as resolved']);
     }
 
-    public function destroy($serverId, $alertId)
+    public function destroy(Server $server, $alertId)
     {
-        $server = Server::findOrFail($serverId);
         $alert = $server->alerts()->findOrFail($alertId);
         $alert->delete();
 

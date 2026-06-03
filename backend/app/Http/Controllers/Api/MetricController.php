@@ -11,9 +11,9 @@ use Illuminate\Http\JsonResponse;
 class MetricController extends Controller
 {
      
-    public function index(Request $request, $serverId): JsonResponse
+    public function index(Request $request, Server $server): JsonResponse
     {
-        $server = Server::findOrFail($serverId);
+     
 
         $metricsQuery = $server->metrics()->latestFirst();
 
@@ -27,9 +27,9 @@ class MetricController extends Controller
         return response()->json($metrics);
     }
 
-        public function store(Request $request, $serverId): JsonResponse
+    
+        public function store(Request $request, Server $server): JsonResponse
         {
-            $server = Server::findOrFail($serverId);
     
             $validated = $request->validate([
                 'cpu_usage' => 'required|numeric|min:0|max:100',
